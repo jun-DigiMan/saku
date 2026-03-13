@@ -797,8 +797,8 @@ html, body {
   /* ブランドは最小幅に縮める */
   .header-brand { flex: 0 0 auto; gap: 4px; }
   .brand-name { display: none; }
-  .brand-icon { font-size: 18px; }
-  .logo-img--header { height: 28px; }
+  .brand-icon { font-size: 22px; }
+  .logo-img--header { height: 34px; }
   /* ナビを中央に伸ばす */
   .header-nav { flex: 1; justify-content: center; gap: 4px; }
   .week-label { font-size: 10px; min-width: 0; white-space: nowrap; }

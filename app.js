@@ -521,8 +521,9 @@ function renderSlots() {
           const is60 = state.slotMinutes === 60;
           const is2week = state.weekCount === 2;
           btn.className = 'slot-btn' + (is60 ? ' slot-btn--60' : '');
-          // チップクラス: 60分×1週=md, 60分×2週=sm, 30分×1週=sm, 30分×2週=xs
+          // チップクラス: 60分×1週=md, 60分×2週=circle, 30分×1週=sm, 30分×2週=xs
           const chipClass = is60 && !is2week ? 'slot-avatar-md'
+                          : is60 && is2week  ? 'slot-avatar-circle'
                           : is2week          ? 'slot-avatar-xs'
                           :                    'slot-avatar-sm';
           const avatars = available.map(m =>

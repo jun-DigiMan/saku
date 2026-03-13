@@ -400,6 +400,14 @@ html, body {
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0; white-space: nowrap;
 }
+.slot-avatar-circle-lg {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  font-size: 13px; font-weight: 700;
+  color: white;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; white-space: nowrap;
+}
 
 /* 60分スロット用レイアウト */
 .slot-btn--60 {

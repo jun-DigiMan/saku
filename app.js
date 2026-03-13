@@ -409,7 +409,7 @@ function renderTimeColumn() {
 function showSlotsWaiting() {
   const grid = document.getElementById('slots-grid');
   const totalDays = state.weekCount * 5;
-  grid.style.gridTemplateColumns = `repeat(${totalDays}, 1fr)`;
+  grid.style.gridTemplateColumns = `repeat(${totalDays}, minmax(0, 1fr))`;
   grid.innerHTML = '';
   for (let d = 0; d < totalDays; d++) {
     const col = document.createElement('div');
@@ -447,7 +447,7 @@ function showReconnectOverlay() {
 function showSlotsLoading() {
   const grid = document.getElementById('slots-grid');
   const totalDays = state.weekCount * 5;
-  grid.style.gridTemplateColumns = `repeat(${totalDays}, 1fr)`;
+  grid.style.gridTemplateColumns = `repeat(${totalDays}, minmax(0, 1fr))`;
   grid.innerHTML = '';
   for (let d = 0; d < totalDays; d++) {
     const col = document.createElement('div');
@@ -481,7 +481,7 @@ function renderSlots() {
   const grid = document.getElementById('slots-grid');
   grid.innerHTML = '';
   const totalDays = state.weekCount * 5;
-  grid.style.gridTemplateColumns = `repeat(${totalDays}, 1fr)`;
+  grid.style.gridTemplateColumns = `repeat(${totalDays}, minmax(0, 1fr))`;
 
   for (let i = 0; i < totalDays; i++) {
     const weekOffset = Math.floor(i / 5);

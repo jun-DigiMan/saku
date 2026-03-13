@@ -342,13 +342,14 @@ html, body {
   background: #d6eef8;
   border: none; border-radius: 6px;
   cursor: pointer;
-  padding: 4px 8px;
-  display: flex; flex-direction: column;
-  align-items: flex-start; justify-content: center;
-  gap: 3px;
+  padding: 0 8px;
+  display: flex; flex-direction: row;
+  align-items: center; justify-content: flex-start;
+  gap: 6px;
   font-family: var(--font-main);
   text-align: left;
   transition: background 0.12s, transform 0.1s;
+  overflow: hidden;
 }
 .slot-btn:hover { background: #b8dfef; transform: scale(1.01); }
 .slot-btn:active { transform: scale(0.98); }

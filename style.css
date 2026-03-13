@@ -610,6 +610,20 @@ html, body {
 .member-select-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
 .member-select-btn.selected { border-color: transparent; color: white; }
 .member-select-btn.busy { opacity: .4; cursor: not-allowed; }
+
+/* 会議URL種別セレクター */
+.meeting-type-selector { display: flex; gap: 8px; }
+.meeting-type-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 10px 20px; border-radius: 8px;
+  border: 1.5px solid #ddd; background: #fff;
+  font-size: 14px; font-weight: 500; color: var(--color-text);
+  cursor: pointer; transition: all 0.15s; font-family: var(--font-main);
+}
+.meeting-type-btn:hover { border-color: var(--color-primary); color: var(--color-primary); }
+.meeting-type-btn.active { border-color: var(--color-primary); background: var(--color-primary); color: white; }
+.meeting-type-btn.active svg { fill: white; }
+#zoom-custom-url-wrap { margin-top: 10px; }
 .member-select-btn .btn-dot {
   height: 20px; padding: 0 7px; border-radius: 10px;
   font-size: 10px; font-weight: 700; color: white;

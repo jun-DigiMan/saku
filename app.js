@@ -616,8 +616,31 @@ function openModal(date, hour, min, availableMembers) {
   document.getElementById('customer-title').value = rd ? rd.customerTitle : '';
   document.getElementById('meeting-comment').value = rd ? rd.comment      : '';
 
+  updateMeetingTypeUI(availableMembers[0]);
+
   document.getElementById('booking-modal').classList.remove('hidden');
   document.getElementById('company-name').focus();
+
+  // 会議タイプボタンのイベント
+  document.querySelectorAll('.meeting-type-btn').forEach(btn => {
+    btn.onclick = () => {
+      document.querySelectorAll('.meeting-type-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const isZoom = btn.dataset.type === 'zoom';
+      const hasPmi = !!(state.selectedMember?.zoomPmi);
+      document.getElementById('zoom-custom-url-wrap').classList.toggle('hidden', !isZoom || hasPmi);
+    };
+  });
+}
+
+function updateMeetingTypeUI(member) {
+  const hasPmi = !!(member?.zoomPmi);
+  const btns = document.querySelectorAll('.meeting-type-btn');
+  btns.forEach(b => b.classList.remove('active'));
+  // PMIが設定されていればZoomをデフォルト選択
+  const defaultType = hasPmi ? 'zoom' : 'meet';
+  btns.forEach(b => { if (b.dataset.type === defaultType) b.classList.add('active'); });
+  document.getElementById('zoom-custom-url-wrap').classList.add('hidden');
 }
 
 function selectMember(member) {
@@ -629,6 +652,7 @@ function selectMember(member) {
     btn.style.color = isSelected ? 'white' : '';
     btn.style.borderColor = isSelected ? member.color : '';
   });
+  updateMeetingTypeUI(member);
 }
 
 function showSuccessScreen({ customerName, companyName, customerEmail }) {
@@ -731,7 +755,21 @@ async function handleBooking() {
         try { await deleteCalendarEvent(state.rescheduleData.eventId); } catch(e) { console.warn('旧イベント削除失敗:', e); }
       }
 
-      const zoomPmi = state.selectedMember.zoomPmi || '';
+      // 選択された会議タイプからZoom URLを解決
+      const selectedMeetType = document.querySelector('.meeting-type-btn.active')?.dataset.type;
+      let zoomPmi = '';
+      if (selectedMeetType === 'zoom') {
+        const pmi = state.selectedMember.zoomPmi;
+        if (pmi) {
+          zoomPmi = pmi;
+        } else {
+          const customUrl = document.getElementById('zoom-custom-url').value.trim();
+          if (customUrl) {
+            // URL形式 or 数字のみ両対応
+            zoomPmi = customUrl.startsWith('http') ? customUrl.replace(/\D/g, '') : customUrl;
+          }
+        }
+      }
       const created = await createCalendarEvent({
         title, startISO, endISO,
         memberEmail: state.selectedMember.calendarId,

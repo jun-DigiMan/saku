@@ -26,7 +26,6 @@
   --header-h: 64px;
   --slot-h: 44px;
   --time-col-w: 64px;
-  --day-col-w: 110px;
 }
 
 /* ============================================================
@@ -235,12 +234,10 @@ html, body {
   border-right: 1px solid var(--color-border);
 }
 .date-header-day {
-  flex: 0 0 var(--day-col-w);
-  width: var(--day-col-w);
-  padding: 10px 8px 8px;
+  flex: 1;
+  padding: 8px 8px 6px;
   text-align: center;
   border-right: 1px solid var(--color-border);
-  min-height: 78px;
 }
 .date-header-day:last-child { border-right: none; }
 .date-day-name {
@@ -253,7 +250,7 @@ html, body {
 }
 .date-holiday-name {
   font-size: 10px; color: var(--color-danger); font-weight: 600;
-  margin-top: 3px; min-height: 14px; line-height: 1.3;
+  margin-top: 2px; line-height: 1.3;
 }
 .date-header-day.today .date-day-num {
   color: #fff;
@@ -273,7 +270,7 @@ html, body {
   display: flex;
   flex: 1;
   overflow-y: auto;
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 .calendar-body::-webkit-scrollbar { width: 6px; }
 .calendar-body::-webkit-scrollbar-track { background: var(--color-bg); }
@@ -302,10 +299,9 @@ html, body {
 
 /* スロットグリッド */
 .slots-grid {
+  flex: 1;
   display: grid;
-  grid-template-columns: repeat(5, var(--day-col-w));
-  width: calc(5 * var(--day-col-w));
-  flex-shrink: 0;
+  grid-template-columns: repeat(5, 1fr);
 }
 .day-column {
   border-right: 1px solid var(--color-border);
@@ -793,7 +789,6 @@ html, body {
   :root {
     --slot-h: 44px;
     --time-col-w: 48px;
-    --day-col-w: 72px;
     --header-h: 52px;
   }
 

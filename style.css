@@ -282,9 +282,6 @@ html, body {
   flex-shrink: 0;
   border-right: 1px solid var(--color-border);
   background: var(--color-white);
-  position: sticky;
-  left: 0;
-  z-index: 5;
 }
 .time-label {
   height: var(--slot-h);
@@ -292,6 +289,7 @@ html, body {
   padding: 4px 3px 0;
   font-size: 10px; font-weight: 500; color: var(--color-text-sub);
   border-bottom: 1px solid var(--color-border);
+  background: var(--color-white);
   white-space: nowrap;
 }
 .time-label.hour { color: var(--color-text); font-weight: 600; font-size: 10px; }
@@ -306,6 +304,7 @@ html, body {
 .day-column {
   border-right: 1px solid var(--color-border);
   display: flex; flex-direction: column;
+  background: var(--color-white);
 }
 .day-column:last-child { border-right: none; }
 
@@ -343,14 +342,13 @@ html, body {
   background: #d6eef8;
   border: none; border-radius: 6px;
   cursor: pointer;
-  padding: 2px 8px;
+  padding: 4px 8px;
   display: flex; flex-direction: column;
   align-items: flex-start; justify-content: center;
-  gap: 2px;
+  gap: 3px;
   font-family: var(--font-main);
   text-align: left;
   transition: background 0.12s, transform 0.1s;
-  overflow: hidden;
 }
 .slot-btn:hover { background: #b8dfef; transform: scale(1.01); }
 .slot-btn:active { transform: scale(0.98); }
@@ -363,13 +361,13 @@ html, body {
 
 .slot-avatars-row {
   display: flex; flex-direction: row;
-  gap: 3px; flex-wrap: nowrap;
+  gap: 4px; flex-wrap: nowrap;
   overflow: hidden;
 }
 .slot-avatar-sm {
-  height: 16px;
-  padding: 0 5px;
-  border-radius: 8px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
   font-size: 10px; font-weight: 700;
   color: white;
   display: inline-flex; align-items: center; justify-content: center;

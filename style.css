@@ -226,7 +226,6 @@ html, body {
   border-bottom: 2px solid var(--color-border);
   flex-shrink: 0;
   box-shadow: var(--shadow-sm);
-  padding-right: 6px; /* スクロールバー幅に合わせて列を揃える */
 }
 .date-header-time {
   width: var(--time-col-w);
@@ -271,10 +270,9 @@ html, body {
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
 }
-.calendar-body::-webkit-scrollbar { width: 6px; }
-.calendar-body::-webkit-scrollbar-track { background: var(--color-bg); }
-.calendar-body::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+.calendar-body::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
 /* 時間ラベル列 */
 .time-column {

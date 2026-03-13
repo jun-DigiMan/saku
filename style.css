@@ -24,7 +24,7 @@
   --shadow-lg: 0 8px 32px rgba(8,37,88,.16);
 
   --header-h: 64px;
-  --slot-h: 60px;
+  --slot-h: 44px;
   --time-col-w: 64px;
   --day-col-w: 110px;
 }
@@ -289,8 +289,8 @@ html, body {
 }
 .time-label {
   height: var(--slot-h);
-  display: flex; align-items: center; justify-content: center;
-  padding: 0 3px;
+  display: flex; align-items: flex-start; justify-content: center;
+  padding: 4px 3px 0;
   font-size: 10px; font-weight: 500; color: var(--color-text-sub);
   border-bottom: 1px solid var(--color-border);
   white-space: nowrap;

@@ -757,7 +757,6 @@ async function handleBooking() {
         saveBookingLocally(bookingId, bookingData);
         const appUrl = window.location.origin + window.location.pathname;
         const rescheduleLink = `${appUrl}?reschedule=${bookingId}`;
-        const zoomPmi = state.selectedMember.zoomPmi || '';
         const meetUrl = zoomPmi
           ? `https://zoom.us/j/${zoomPmi.replace(/\D/g, '')}`
           : (created.meetUrl || '');
@@ -769,21 +768,24 @@ async function handleBooking() {
           rescheduleLink,
           isReschedule: !!state.rescheduleData,
         });
-        // バウンスメール到着を待って確認（即時バウンスは数秒で届く）
-        btn.textContent = 'メール到達確認中...';
-        await sleep(1500);
-        const bounceRes = await gapi.client.request({
-          path: 'https://www.googleapis.com/gmail/v1/users/me/messages',
-          params: {
-            q: `(from:mailer-daemon OR from:postmaster) after:${sendTimestamp} "${customerEmail}"`,
-            maxResults: 1,
-          },
-        });
-        if (bounceRes.result.messages?.length > 0) {
-          alert(`確認メールが届かなかった可能性があります。\nメールアドレスをご確認ください。\n\n送信先: ${customerEmail}`);
-          mailStatus = `⚠️ メール未達（バウンス検知）\nメールアドレスを再確認してください。\n送信先: ${customerEmail}`;
-        } else {
-          mailStatus = `✅ 確認メール送信済み\n送信先: ${customerEmail}`;
+        // メール送信成功 → バウンス確認（失敗しても送信失敗扱いにしない）
+        mailStatus = `✅ 確認メール送信済み\n送信先: ${customerEmail}`;
+        try {
+          btn.textContent = 'メール到達確認中...';
+          await sleep(1500);
+          const bounceRes = await gapi.client.request({
+            path: 'https://www.googleapis.com/gmail/v1/users/me/messages',
+            params: {
+              q: `(from:mailer-daemon OR from:postmaster) after:${sendTimestamp} "${customerEmail}"`,
+              maxResults: 1,
+            },
+          });
+          if (bounceRes.result.messages?.length > 0) {
+            alert(`確認メールが届かなかった可能性があります。\nメールアドレスをご確認ください。\n\n送信先: ${customerEmail}`);
+            mailStatus = `⚠️ メール未達（バウンス検知）\nメールアドレスを再確認してください。\n送信先: ${customerEmail}`;
+          }
+        } catch(bounceErr) {
+          console.warn('バウンス確認スキップ:', bounceErr);
         }
       } catch(mailErr) {
         console.warn('メール送信失敗:', mailErr);

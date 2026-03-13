@@ -134,6 +134,10 @@ function loadBusyCache() {
 // ---------- 初期化 ----------
 window.addEventListener('DOMContentLoaded', () => {
   state.currentMonday = getMonday(new Date());
+  // 初期スロット高さを設定
+  if (state.slotMinutes === 60) {
+    document.documentElement.style.setProperty('--slot-h', '88px');
+  }
   processUrlParams(); // URLパラメータからメンバー追加
   renderLegend();
 
@@ -172,6 +176,8 @@ window.addEventListener('DOMContentLoaded', () => {
     btn.addEventListener('click', () => {
       state.slotMinutes = parseInt(btn.dataset.slot);
       document.querySelectorAll('[data-slot]').forEach(b => b.classList.toggle('active', b === btn));
+      const slotH = state.slotMinutes === 60 ? '88px' : '44px';
+      document.documentElement.style.setProperty('--slot-h', slotH);
       loadAndRender();
     });
   });
@@ -513,8 +519,10 @@ function renderSlots() {
         if (available.length > 0 && (state.authReady || Object.keys(state.busyData).length > 0)) {
           const btn = document.createElement('button');
           btn.className = 'slot-btn';
+          const is2week = state.weekCount === 2;
+          const chipClass = is2week ? 'slot-avatar-xs' : 'slot-avatar-sm';
           const avatars = available.map(m =>
-            `<span class="slot-avatar-sm" style="background:${m.color}">${m.lastName}</span>`
+            `<span class="${chipClass}" style="background:${m.color}">${is2week ? m.lastName[0] : m.lastName}</span>`
           ).join('');
           btn.innerHTML = `
             <span class="slot-time-text">${fmt(hour, min)} - ${fmt(endH, endM)}</span>

@@ -342,10 +342,10 @@ html, body {
   background: #d6eef8;
   border: none; border-radius: 6px;
   cursor: pointer;
-  padding: 0 8px;
-  display: flex; flex-direction: row;
-  align-items: center; justify-content: flex-start;
-  gap: 6px;
+  padding: 4px 6px;
+  display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: center;
+  gap: 2px;
   font-family: var(--font-main);
   text-align: left;
   transition: background 0.12s, transform 0.1s;
@@ -370,6 +370,15 @@ html, body {
   padding: 0 6px;
   border-radius: 9px;
   font-size: 10px; font-weight: 700;
+  color: white;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; white-space: nowrap;
+}
+.slot-avatar-xs {
+  height: 15px;
+  padding: 0 4px;
+  border-radius: 8px;
+  font-size: 9px; font-weight: 700;
   color: white;
   display: inline-flex; align-items: center; justify-content: center;
   flex-shrink: 0; white-space: nowrap;
@@ -826,10 +835,11 @@ html, body {
   .time-label.hour { font-size: 9px; }
 
   /* ---- Slot buttons ---- */
-  .slot-btn { padding: 2px 2px; border-radius: 3px; gap: 1px; }
+  .slot-btn { padding: 2px 3px; border-radius: 3px; gap: 1px; }
   .slot-time-text { font-size: 8px; font-weight: 700; }
   .slot-avatars-row { gap: 2px; }
   .slot-avatar-sm { height: 14px; padding: 0 3px; font-size: 8px; border-radius: 7px; }
+  .slot-avatar-xs { height: 12px; padding: 0 2px; font-size: 7px; border-radius: 6px; }
 
   /* ---- Booking form ---- */
   .booking-container { margin: 0; border-radius: 0; padding: 20px 16px 40px; box-shadow: none; }

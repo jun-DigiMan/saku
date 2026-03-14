@@ -3511,7 +3511,6 @@ function splitJapaneseName(name, email) {
   if (candidates.length === 0) {
     return clean.length > 2 ? clean.slice(0, 2) + ' ' + clean.slice(2) : clean;
   }
-  // 候補が1つ or メールなし → 最長一致をそのまま使用
   if (candidates.length === 1 || !email) {
     return candidates[0].surname + ' ' + candidates[0].given;
   }
@@ -3520,31 +3519,30 @@ function splitJapaneseName(name, email) {
   const localPart = email.split('@')[0].toLowerCase();
   const emailParts = localPart.split(/[._\-]/).filter(p => p.length > 0);
 
-  const scored = candidates.map(c => {
-    let score = 0;
-    const sInit = KANJI_INITIALS[c.surname[0]] || '';
-    const gInit = KANJI_INITIALS[c.given[0]] || '';
+  // 1パートと漢字列の一致スコア（文字数 + 頭文字）
+  function partScore(p, kanjiStr) {
+    if (!kanjiStr) return 0;
+    const init = KANJI_INITIALS[kanjiStr[0]] || '';
+    if (p.length === 1) return init === p ? 8 : 0;
+    const expected = kanjiStr.length * 2.5;
+    return Math.max(0, 8 - Math.abs(p.length - expected)) + (init && p[0] === init ? 3 : 0);
+  }
 
-    for (const p of emailParts) {
-      if (p.length === 1) {
-        // 頭文字マッチ: 苗字/名前のどちらの初頭かを判定
-        if (sInit === p) score += 6;
-        if (gInit === p) score += 6;
-      } else {
-        // 文字数ヒューリスティック: 漢字1字 ≈ ローマ字2.5文字
-        const sExpected = c.surname.length * 2.5;
-        const gExpected = c.given.length * 2.5;
-        score += Math.max(0, 8 - Math.abs(p.length - sExpected));
-        score += Math.max(0, 8 - Math.abs(p.length - gExpected));
-        // 長い部分の頭文字チェック
-        if (sInit && p[0] === sInit) score += 3;
-        if (gInit && p[0] === gInit) score += 3;
-      }
+  const scored = candidates.map(c => {
+    // パートが2つある場合は「苗字→名前」と「名前→苗字」両方向を試してベストを採用
+    let score;
+    if (emailParts.length >= 2) {
+      const [p1, p2] = emailParts;
+      const fwd = partScore(p1, c.surname) + partScore(p2, c.given);   // p1=苗字, p2=名前
+      const rev = partScore(p1, c.given)   + partScore(p2, c.surname); // p1=名前, p2=苗字
+      score = Math.max(fwd, rev);
+    } else {
+      // パート1つ: 苗字・名前どちらに近いか
+      score = partScore(emailParts[0], c.surname) + partScore(emailParts[0], c.given);
     }
     return { ...c, score };
   });
 
-  // スコア降順 → 同点なら苗字長い順（最長一致フォールバック）
   scored.sort((a, b) => b.score - a.score || b.surname.length - a.surname.length);
   return scored[0].surname + ' ' + scored[0].given;
 }

@@ -3494,7 +3494,16 @@ const KANJI_INITIALS = {
   '若':'w','渡':'w','和':'w',
   '藤':'f','深':'f','福':'f','古':'f',
   '後':'g',
+  // 名前先頭によく使われる漢字
+  '光':'k','勝':'k','幸':'k','健':'k','賢':'k','浩':'h','博':'h','弘':'h','広':'h',
+  '明':'a','昭':'a','朗':'a','晃':'a','義':'y','良':'r','郎':'r','男':'o','雄':'y',
+  '二':'n','次':'t','治':'j','志':'s','司':'t','信':'n','進':'s','順':'j',
+  '一':'i','壱':'i','市':'i','英':'e','栄':'e','永':'e',
 };
+
+// 漢字N文字の苗字/名前に対するローマ字文字数の期待範囲
+// 実測値ベース: 金(3)、金光(9)、光一郎(8)、田中(6) etc.
+const ROMAJI_RANGES = { 1:[2,6], 2:[4,11], 3:[6,14], 4:[8,17] };
 
 // メールアドレスのローカル部からヒントを抽出して苗字/名前を判別
 function splitJapaneseName(name, email) {
@@ -3519,26 +3528,38 @@ function splitJapaneseName(name, email) {
   const localPart = email.split('@')[0].toLowerCase();
   const emailParts = localPart.split(/[._\-]/).filter(p => p.length > 0);
 
-  // 1パートと漢字列の一致スコア（文字数 + 頭文字）
+  // ローマ字パート p が漢字列 kanjiStr に対応しているか採点
   function partScore(p, kanjiStr) {
-    if (!kanjiStr) return 0;
+    if (!p || !kanjiStr) return 0;
     const init = KANJI_INITIALS[kanjiStr[0]] || '';
-    if (p.length === 1) return init === p ? 8 : 0;
-    const expected = kanjiStr.length * 2.5;
-    return Math.max(0, 8 - Math.abs(p.length - expected)) + (init && p[0] === init ? 3 : 0);
+    if (p.length === 1) return init === p ? 10 : 0;
+    const n = Math.min(kanjiStr.length, 4);
+    const [rMin, rMax] = ROMAJI_RANGES[n] || [n * 2, n * 5];
+    const mid = (rMin + rMax) / 2;
+    let lenScore;
+    if (p.length >= rMin && p.length <= rMax) {
+      // 範囲内: 中心に近いほど高得点
+      lenScore = Math.max(3, 10 - Math.abs(p.length - mid) * 1.5);
+    } else {
+      // 範囲外: 距離に応じて急落
+      const dist = p.length < rMin ? rMin - p.length : p.length - rMax;
+      lenScore = Math.max(0, 3 - dist * 1.5);
+    }
+    const initBonus = (init && p[0] === init) ? 4 : 0;
+    return lenScore + initBonus;
   }
 
   const scored = candidates.map(c => {
-    // パートが2つある場合は「苗字→名前」と「名前→苗字」両方向を試してベストを採用
     let score;
     if (emailParts.length >= 2) {
+      // 2パート以上: 「p1=苗字,p2=名前」「p1=名前,p2=苗字」両方向のベストを採用
       const [p1, p2] = emailParts;
-      const fwd = partScore(p1, c.surname) + partScore(p2, c.given);   // p1=苗字, p2=名前
-      const rev = partScore(p1, c.given)   + partScore(p2, c.surname); // p1=名前, p2=苗字
+      const fwd = partScore(p1, c.surname) + partScore(p2, c.given);
+      const rev = partScore(p1, c.given)   + partScore(p2, c.surname);
       score = Math.max(fwd, rev);
     } else {
-      // パート1つ: 苗字・名前どちらに近いか
-      score = partScore(emailParts[0], c.surname) + partScore(emailParts[0], c.given);
+      // 1パート: 日本の業務メールは苗字ベースが多いので苗字として照合
+      score = partScore(emailParts[0], c.surname);
     }
     return { ...c, score };
   });

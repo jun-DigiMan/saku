@@ -218,7 +218,10 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('customer-name').addEventListener('blur', () => {
     const el = document.getElementById('customer-name');
     let v = el.value.replace(/　/g, ' ').replace(/ +/g, ' ').trim();
-    if (v.length > 1 && !/[ ]/.test(v)) v = splitJapaneseName(v);
+    if (v.length > 1 && !/[ ]/.test(v)) {
+      const email = document.getElementById('customer-email').value.trim();
+      v = splitJapaneseName(v, email);
+    }
     el.value = v;
   });
 
@@ -3457,15 +3460,79 @@ const JP_SURNAMES = (() => {
   return [...new Set(list)].sort((a, b) => b.length - a.length);
 })();
 
-function splitJapaneseName(name) {
+// 苗字先頭の漢字 → ローマ字頭文字（曖昧解消用）
+const KANJI_INITIALS = {
+  '阿':'a','荒':'a','青':'a','赤':'a','秋':'a','有':'a','粟':'a','朝':'a','麻':'a','吾':'a',
+  '池':'i','石':'i','市':'i','伊':'i','今':'i','岩':'i','磯':'i','板':'i','出':'i','一':'i',
+  '上':'u','植':'u','宇':'u','梅':'u',
+  '江':'e','榎':'e','遠':'e',
+  '大':'o','岡':'o','奥':'o','鬼':'o',
+  '小':'k','金':'k','川':'k','木':'k','北':'k','神':'k','菊':'k','岸':'k','清':'k','国':'k',
+  '熊':'k','黒':'k','倉':'k','栗':'k','久':'k','近':'k','桑':'k','桐':'k','衣':'k','越':'k',
+  '坂':'s','佐':'s','斉':'s','斎':'s','齋':'s','柴':'s','島':'s','下':'s','沢':'s','白':'s',
+  '杉':'s','鈴':'s','関':'s','瀬':'s','曽':'s','新':'s',
+  '高':'t','田':'t','竹':'t','武':'t','谷':'t','辻':'t','堤':'t','寺':'t','豊':'t','富':'t',
+  '徳':'t','土':'d','津':'t','對':'t',
+  '中':'n','永':'n','長':'n','西':'n','野':'n',
+  '橋':'h','浜':'h','林':'h','原':'h','花':'h','樋':'h','平':'h','堀':'h','本':'h','細':'h',
+  '村':'m','三':'m','宮':'m','水':'m','松':'m','丸':'m','前':'m','牧':'m','南':'m','益':'m',
+  '矢':'y','山':'y','柳':'y','吉':'y','安':'y',
+  '若':'w','渡':'w','和':'w',
+  '藤':'f','深':'f','福':'f','古':'f',
+  '後':'g',
+};
+
+// メールアドレスのローカル部からヒントを抽出して苗字/名前を判別
+function splitJapaneseName(name, email) {
   const clean = name.replace(/\s/g, '');
+
+  // 辞書に一致する苗字候補を全て収集
+  const candidates = [];
   for (const s of JP_SURNAMES) {
     if (clean.startsWith(s) && clean.length > s.length) {
-      return s + ' ' + clean.slice(s.length);
+      candidates.push({ surname: s, given: clean.slice(s.length) });
     }
   }
-  // 辞書未登録: 2文字後にスペース挿入（フォールバック）
-  return clean.length > 2 ? clean.slice(0, 2) + ' ' + clean.slice(2) : clean;
+
+  if (candidates.length === 0) {
+    return clean.length > 2 ? clean.slice(0, 2) + ' ' + clean.slice(2) : clean;
+  }
+  // 候補が1つ or メールなし → 最長一致をそのまま使用
+  if (candidates.length === 1 || !email) {
+    return candidates[0].surname + ' ' + candidates[0].given;
+  }
+
+  // メールヒントでスコアリング
+  const localPart = email.split('@')[0].toLowerCase();
+  const emailParts = localPart.split(/[._\-]/).filter(p => p.length > 0);
+
+  const scored = candidates.map(c => {
+    let score = 0;
+    const sInit = KANJI_INITIALS[c.surname[0]] || '';
+    const gInit = KANJI_INITIALS[c.given[0]] || '';
+
+    for (const p of emailParts) {
+      if (p.length === 1) {
+        // 頭文字マッチ: 苗字/名前のどちらの初頭かを判定
+        if (sInit === p) score += 6;
+        if (gInit === p) score += 6;
+      } else {
+        // 文字数ヒューリスティック: 漢字1字 ≈ ローマ字2.5文字
+        const sExpected = c.surname.length * 2.5;
+        const gExpected = c.given.length * 2.5;
+        score += Math.max(0, 8 - Math.abs(p.length - sExpected));
+        score += Math.max(0, 8 - Math.abs(p.length - gExpected));
+        // 長い部分の頭文字チェック
+        if (sInit && p[0] === sInit) score += 3;
+        if (gInit && p[0] === gInit) score += 3;
+      }
+    }
+    return { ...c, score };
+  });
+
+  // スコア降順 → 同点なら苗字長い順（最長一致フォールバック）
+  scored.sort((a, b) => b.score - a.score || b.surname.length - a.surname.length);
+  return scored[0].surname + ' ' + scored[0].given;
 }
 
 // ---------- 市外局番データベース（桁数マッピング） ----------

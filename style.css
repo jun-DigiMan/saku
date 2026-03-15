@@ -910,24 +910,26 @@ html, body {
     min-height: var(--header-h);
     flex-wrap: wrap;
   }
-  /* ブランドは最小幅に縮める */
-  .header-brand { flex: 0 0 auto; gap: 4px; order: 1; }
+  /* ブランドは1行目中央に配置 */
+  .header-brand { flex: 0 0 auto; gap: 4px; order: 1; align-items: center; }
   .brand-name { display: none; }
   .brand-icon { font-size: 28px; }
-  .logo-img--header { height: 40px; }
-  /* ナビを中央に伸ばす */
-  .header-nav { flex: 1; justify-content: center; gap: 4px; order: 2; }
+  .logo-img--header { height: 32px; }
+  /* ナビを中央に伸ばす（1行目） */
+  .header-nav { flex: 1; justify-content: center; gap: 4px; order: 2; align-items: center; }
   .week-label { font-size: 10px; min-width: 0; white-space: nowrap; }
   .week-label-btn { height: 28px; padding: 0 7px; font-size: 10px; }
   .nav-btn { width: 28px; height: 28px; }
-  /* コントロール: 2行目として全幅表示 */
+  /* コントロール: 2行目として完全中央揃え */
   .header-controls {
     flex: 0 0 100%;
     order: 3;
-    gap: 6px;
+    gap: 8px;
     justify-content: center;
-    flex-wrap: wrap;
-    padding: 2px 0 4px;
+    align-items: center;
+    flex-wrap: nowrap;
+    padding: 4px 0 6px;
+    border-top: 1px solid rgba(255,255,255,0.15);
   }
   .header-legend { display: none; }
   /* トグルボタンをモバイルでも表示（小さく） */

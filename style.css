@@ -953,12 +953,25 @@ html, body {
   .time-label { font-size: 9px; padding: 0 2px; }
   .time-label.hour { font-size: 9px; }
 
-  /* ---- Slot buttons ---- */
-  .slot-btn { padding: 2px 3px; border-radius: 3px; gap: 1px; }
-  .slot-time-text { font-size: 8px; font-weight: 700; }
-  .slot-avatars-row { gap: 2px; }
-  .slot-avatar-sm { height: 14px; padding: 0 3px; font-size: 8px; border-radius: 7px; }
-  .slot-avatar-xs { height: 12px; padding: 0 2px; font-size: 7px; border-radius: 6px; }
+  /* ---- Slot buttons（全4パターン対応） ---- */
+  .slot-btn { padding: 2px 2px; border-radius: 3px; gap: 1px; border-left-width: 2px; }
+  .slot-btn--60 { padding: 3px 2px; gap: 2px; }
+  /* 時間テキスト：overflow:hiddenで切り捨て */
+  .slot-time-text {
+    font-size: 7px; font-weight: 700;
+    overflow: hidden; white-space: nowrap;
+    max-width: 100%; display: block;
+  }
+  /* 60分も同じサイズに上書き */
+  .slot-btn--60 .slot-time-text { font-size: 7px; }
+  .slot-avatars-row { gap: 1px; }
+  /* 1週（列幅~65px）用アバター */
+  .slot-avatar-sm  { height: 13px; padding: 0 3px; font-size: 7px; border-radius: 7px; }
+  .slot-avatar-md  { height: 16px; padding: 0 4px; font-size: 8px; border-radius: 8px; }
+  /* 2週（列幅~33px）用アバター：正円を小さく */
+  .slot-avatar-xs        { height: 11px; padding: 0 2px; font-size: 6px; border-radius: 6px; }
+  .slot-avatar-circle    { width: 16px; height: 16px; font-size: 8px; }
+  .slot-avatar-circle-lg { width: 18px; height: 18px; font-size: 9px; }
 
   /* ---- Booking form ---- */
   .booking-container { margin: 0; border-radius: 0; padding: 20px 16px 40px; box-shadow: none; }

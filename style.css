@@ -899,7 +899,7 @@ html, body {
   :root {
     --slot-h: 56px;
     --time-col-w: 48px;
-    --header-h: 52px;
+    --header-h: 90px;  /* 2行ヘッダー: 行1(~46px) + gap(6px) + 行2(~38px) */
   }
 
   /* ---- Header ---- */
@@ -942,7 +942,7 @@ html, body {
   .members-btn,
   .signout-header-btn { width: 28px; height: 28px; margin-left: 0; }
   /* カレンダーの高さをヘッダーの実際の高さに合わせる */
-  .calendar-wrapper { height: calc(100vh - 96px); }
+  .calendar-wrapper { height: calc(100vh - var(--header-h)); }
 
   /* ---- Date header ---- */
   .date-header-day { padding: 5px 2px 4px; min-height: 58px; }

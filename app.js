@@ -782,8 +782,8 @@ async function handleBooking() {
         } else {
           const customUrl = document.getElementById('zoom-custom-url').value.trim();
           if (customUrl) {
-            // URL形式 or 数字のみ両対応
-            zoomPmi = customUrl.startsWith('http') ? customUrl.replace(/\D/g, '') : customUrl;
+            // URL形式はそのまま、数字のみの場合もそのまま渡す（URL構築は呼び出し側で処理）
+            zoomPmi = customUrl;
           }
         }
       }

@@ -813,7 +813,7 @@ async function handleBooking() {
         const appUrl = window.location.origin + window.location.pathname;
         const rescheduleLink = `${appUrl}?reschedule=${bookingId}`;
         const meetUrl = zoomPmi
-          ? `https://zoom.us/j/${zoomPmi.replace(/\D/g, '')}`
+          ? (zoomPmi.startsWith('http') ? zoomPmi : `https://zoom.us/j/${zoomPmi.replace(/\D/g, '')}`)
           : (created.meetUrl || '');
         await sendConfirmationEmails({
           customerName, companyName, customerEmail,
@@ -918,7 +918,7 @@ async function createCalendarEvent({ title, startISO, endISO, memberEmail, custo
   if (memberEmail)   attendees.push({ email: memberEmail });
   if (customerEmail) attendees.push({ email: customerEmail });
 
-  const zoomUrl = zoomPmi ? `https://zoom.us/j/${zoomPmi.replace(/\D/g, '')}` : '';
+  const zoomUrl = zoomPmi ? (zoomPmi.startsWith('http') ? zoomPmi : `https://zoom.us/j/${zoomPmi.replace(/\D/g, '')}`) : '';
   const descBase = `【会社名】${companyName || ''}\n【顧客名】${customerName}様\n【部署名・役職名】${customerDept || ''}${customerTitle ? ' ' + customerTitle : ''}\n【電話番号】${customerPhone || ''}\n【メールアドレス】${customerEmail || ''}${comment ? '\n【コメント】' + comment : ''}`;
 
   const event = {

@@ -330,8 +330,8 @@ function checkAndAutoSignIn() {
       // トークン復元済み → 即座にfreeBusy取得してスロット表示
       loadAndRender();
     } else {
-      // 保存トークンなし → ユーザーに再認証を促す
-      state.tokenClient.requestAccessToken({ prompt: '' });
+      // 保存トークンなし → 再接続ボタンを表示（モバイルSafariでポップアップブロックを避けるためユーザー操作を要求）
+      showReconnectOverlay();
     }
   } else {
     // 未サインイン → サインイン画面

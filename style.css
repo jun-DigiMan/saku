@@ -923,8 +923,10 @@ html, body {
   /* コントロール: 2行目として完全中央揃え */
   .header-controls {
     flex: 0 0 100%;
+    width: 100%;
     order: 3;
     gap: 8px;
+    display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: nowrap;

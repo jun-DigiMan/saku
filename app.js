@@ -1041,7 +1041,7 @@ async function sendConfirmationEmails({ customerName, companyName, customerEmail
     ? `<p style="margin:16px 0;"><strong>■ ${isZoom ? 'Zoom' : 'Google Meet'} URL</strong><br><a href="${meetUrl}" style="color:#1155cc;">${meetUrl}</a></p><p>当日は上記URLより${isZoom ? 'Zoom' : 'Google Meet'}にてご参加ください。</p>`
     : '';
   const rescheduleHtml = rescheduleLink
-    ? `<p style="margin:16px 0;color:#888;font-size:13px;">日程変更が必要な場合は担当者までご連絡ください。</p>`
+    ? `<p style="margin:16px 0;color:#888;font-size:13px;">※日程変更が必要な場合は担当者までご連絡ください。</p>`
     : '';
   const memberRescheduleHtml = rescheduleLink
     ? `<p style="margin:16px 0;background:#f8f9fa;border-left:3px solid #f0c040;padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;">🔄 <strong>日程変更リンク（担当者用）</strong><br><a href="${rescheduleLink}" style="color:#1155cc;">${rescheduleLink}</a><br><small style="color:#888;">このリンクからログイン済みのサクピタで日程変更できます</small></p>`
@@ -1067,8 +1067,8 @@ async function sendConfirmationEmails({ customerName, companyName, customerEmail
     `<p>${isReschedule ? '日程を変更させていただきましたのでご連絡申し上げます。' : 'この度はお打ち合わせのご予約をいただき、誠にありがとうございます。<br>以下の日程でお打ち合わせが確定いたしましたのでご連絡申し上げます。'}</p>` +
     table([['担当者', memberName], ['会社名', companyName || '—'], ['日時', dateLabel]]) +
     meetHtml +
-    rescheduleHtml +
-    `<p>ご不明な点がございましたら、担当者までお気軽にご連絡ください。<br>どうぞよろしくお願いいたします。</p>`
+    `<p>ご不明な点がございましたら、担当者までお気軽にご連絡ください。<br>どうぞよろしくお願いいたします。</p>` +
+    rescheduleHtml
   );
 
   const memberBody = wrap(

@@ -1120,6 +1120,19 @@ async function initSpreadsheet() {
     });
     console.log('スプシヘッダー更新完了:', tabTitle);
   }
+
+  // ヘッダー行を中央揃えに
+  const sheetIdNum = meta.sheets?.[0]?.properties?.sheetId ?? 0;
+  await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
+    method: 'POST', headers: auth,
+    body: JSON.stringify({ requests: [{
+      repeatCell: {
+        range: { sheetId: sheetIdNum, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: HEADERS.length },
+        cell: { userEnteredFormat: { horizontalAlignment: 'CENTER' } },
+        fields: 'userEnteredFormat.horizontalAlignment',
+      },
+    }] }),
+  });
 }
 
 // ---------- スプレッドシート連携 ----------

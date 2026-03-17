@@ -727,14 +727,12 @@ async function handleBooking() {
   if (!customerName)   { highlight('customer-name');  return; }
   if (!customerEmail)  { highlight('customer-email'); return; }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail)) {
-    highlight('customer-email');
-    alert('メールアドレスの形式が正しくありません。\n例: name@example.com');
+    highlight('customer-email', 'メールアドレスの形式が正しくありません。例: name@example.com');
     return;
   }
-  if (!customerPhone)  { highlight('customer-phone'); return; }
+  if (!customerPhone)  { highlight('customer-phone', '電話番号を入力してください'); return; }
   if (!/^\d{2,4}-\d{2,4}-\d{3,4}$/.test(customerPhone)) {
-    highlight('customer-phone');
-    alert('電話番号はハイフン形式で入力してください。\n例: 03-1234-5678 / 090-1234-5678');
+    highlight('customer-phone', '正しい形式で入力してください。例: 090-1234-5678 / 03-1234-5678');
     return;
   }
   if (!customerDept)   { highlight('customer-dept');  return; }
@@ -1280,12 +1278,23 @@ function toDateStr(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
 }
 
-function highlight(id) {
+function highlight(id, msg) {
   const el = document.getElementById(id);
   el.focus();
   el.style.borderColor = '#e04f24';
   el.style.boxShadow = '0 0 0 3px rgba(224,79,36,.15)';
-  setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 1500);
+  // 既存エラーメッセージ削除
+  const prev = document.getElementById(id + '-error');
+  if (prev) prev.remove();
+  if (msg) {
+    const err = document.createElement('p');
+    err.id = id + '-error';
+    err.textContent = msg;
+    err.style.cssText = 'color:#e04f24;font-size:12px;margin:4px 0 0 2px;';
+    el.insertAdjacentElement('afterend', err);
+    setTimeout(() => err.remove(), 4000);
+  }
+  setTimeout(() => { el.style.borderColor = ''; el.style.boxShadow = ''; }, 4000);
 }
 
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }

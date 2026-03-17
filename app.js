@@ -877,7 +877,7 @@ async function handleBooking() {
         const { date, hour, min, endH, endM } = state.selectedSlot;
         const fmt = (h, m) => `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
         const meetingDate = `${date.getFullYear()}/${date.getMonth()+1}/${date.getDate()} ${fmt(hour,min)}〜${fmt(endH,endM)}`;
-        const sentDate = (() => { const n = new Date(); return `${n.getFullYear()}/${n.getMonth()+1}/${n.getDate()}`; })();
+        const sentDate = (() => { const n = new Date(); return `${n.getFullYear()}/${n.getMonth()+1}/${n.getDate()} ${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`; })();
         await appendToSheet({
           companyName, customerName, customerDept, customerTitle,
           customerPhone, customerEmail,
@@ -1096,7 +1096,7 @@ async function initSpreadsheet() {
   const token = gapi.client.getToken();
   if (!token?.access_token) return;
 
-  const HEADERS = ['企業名', '顧客名', '部署', '役職', '電話番号', 'メールアドレス', 'メール送信日', '商談日時', 'コメント', '担当者', '担当者メール', '予約ID', 'カレンダーイベントID', '開始日時', '種別', '会議URL'];
+  const HEADERS = ['企業名', '顧客名', '部署', '役職', '電話番号', 'メールアドレス', 'メール送信日時', '商談日時', 'コメント', '担当者', '担当者メール', '予約ID', 'カレンダーイベントID', '開始日時', '種別', '会議URL'];
   const auth = { 'Authorization': `Bearer ${token.access_token}`, 'Content-Type': 'application/json' };
 
   // スプシ名・ヘッダー確認

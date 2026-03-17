@@ -1093,35 +1093,30 @@ async function sendConfirmationEmails({ customerName, companyName, customerEmail
 async function initSpreadsheet() {
   const sheetId = CONFIG.SHEET_ID || localStorage.getItem('sakupita_sheet_id');
   if (!sheetId) return;
+  const token = gapi.client.getToken();
+  if (!token?.access_token) return;
 
   const HEADERS = ['企業名', '顧客名', '部署', '役職', '電話番号', 'メールアドレス', 'メール送信日', '商談日時', 'コメント', '担当者', '担当者メール', '予約ID', 'カレンダーイベントID', '開始日時', '種別', '会議URL'];
+  const auth = { 'Authorization': `Bearer ${token.access_token}`, 'Content-Type': 'application/json' };
 
-  const meta = await gapi.client.request({
-    path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}`,
-    params: { fields: 'properties.title,sheets.properties' },
-  });
+  // スプシ名・ヘッダー確認
+  const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}?fields=properties.title,sheets.properties`, { headers: auth });
+  const meta = await metaRes.json();
 
-  // スプシ名変更
-  if (meta.result.properties?.title !== '【サクピタ】顧客管理表') {
-    await gapi.client.request({
-      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`,
-      method: 'POST',
-      body: { requests: [{ updateSpreadsheetProperties: { properties: { title: '【サクピタ】顧客管理表' }, fields: 'title' } }] },
+  if (meta.properties?.title !== '【サクピタ】顧客管理表') {
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
+      method: 'POST', headers: auth,
+      body: JSON.stringify({ requests: [{ updateSpreadsheetProperties: { properties: { title: '【サクピタ】顧客管理表' }, fields: 'title' } }] }),
     });
   }
 
-  // 最初のシートタブ名を取得してヘッダーを確認・更新
-  const tabTitle = meta.result.sheets?.[0]?.properties?.title || 'Sheet1';
-  const range = encodeURIComponent(tabTitle);
-  const headerCheck = await gapi.client.request({
-    path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}!A1`,
-  });
-  if ((headerCheck.result.values?.[0]?.length || 0) < HEADERS.length) {
-    await gapi.client.request({
-      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${range}!A1`,
-      method: 'PUT',
-      params: { valueInputOption: 'USER_ENTERED' },
-      body: { values: [HEADERS] },
+  const tabTitle = meta.sheets?.[0]?.properties?.title || 'Sheet1';
+  const headerRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabTitle)}!A1`, { headers: auth });
+  const headerData = await headerRes.json();
+  if ((headerData.values?.[0]?.length || 0) < HEADERS.length) {
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodeURIComponent(tabTitle)}!A1?valueInputOption=USER_ENTERED`, {
+      method: 'PUT', headers: auth,
+      body: JSON.stringify({ values: [HEADERS] }),
     });
     console.log('スプシヘッダー更新完了:', tabTitle);
   }
@@ -1132,21 +1127,27 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
   const sheetId = CONFIG.SHEET_ID || localStorage.getItem('sakupita_sheet_id');
   if (!sheetId) throw new Error('SHEET_ID が未設定です');
 
-  // シートタブ名をAPIで取得して明示指定
-  const metaRes = await gapi.client.request({
-    path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}`,
-    params: { fields: 'sheets.properties(title)' },
-  });
-  const tabName = metaRes.result.sheets?.[0]?.properties?.title || 'Sheet1';
-  const encodedRange = encodeURIComponent(tabName + '!A1');
+  const token = gapi.client.getToken();
+  if (!token?.access_token) throw new Error('アクセストークンが取得できません');
 
-  const appendRes = await gapi.client.request({
-    path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodedRange}:append`,
+  const row = [companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, memberName || '', memberEmail || '', bookingId || '', eventId || '', startISO || '', isReschedule ? '日程変更' : '新規予約', meetUrl || ''];
+
+  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
+  const res = await fetch(url, {
     method: 'POST',
-    params: { valueInputOption: 'USER_ENTERED', insertDataOption: 'INSERT_ROWS' },
-    body: { values: [[companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, memberName || '', memberEmail || '', bookingId || '', eventId || '', startISO || '', isReschedule ? '日程変更' : '新規予約', meetUrl || '']] },
+    headers: {
+      'Authorization': `Bearer ${token.access_token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ values: [row] }),
   });
-  console.log('スプシ書き込み完了:', appendRes?.result?.updates);
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ error: { message: res.statusText } }));
+    throw new Error(err?.error?.message || res.statusText);
+  }
+  const result = await res.json();
+  console.log('スプシ書き込み完了:', result.updates);
 }
 
 // ---------- Google Calendar Free/Busy 取得 ----------

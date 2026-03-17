@@ -1127,27 +1127,19 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
   const sheetId = CONFIG.SHEET_ID || localStorage.getItem('sakupita_sheet_id');
   if (!sheetId) throw new Error('SHEET_ID が未設定です');
 
-  const token = gapi.client.getToken();
-  if (!token?.access_token) throw new Error('アクセストークンが取得できません');
+  const row = [
+    companyName || '', customerName || '', customerDept || '', customerTitle || '',
+    customerPhone || '', customerEmail || '', sentDate || '', meetingDate || '',
+    comment || '', memberName || '', memberEmail || '', bookingId || '',
+    eventId || '', startISO || '', isReschedule ? '日程変更' : '新規予約', meetUrl || '',
+  ];
 
-  const row = [companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, memberName || '', memberEmail || '', bookingId || '', eventId || '', startISO || '', isReschedule ? '日程変更' : '新規予約', meetUrl || ''];
-
-  const url = `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A1:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`;
-  const res = await fetch(url, {
+  await gapi.client.request({
+    path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A2:append`,
     method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token.access_token}`,
-      'Content-Type': 'application/json',
-    },
+    params: { valueInputOption: 'USER_ENTERED', insertDataOption: 'INSERT_ROWS' },
     body: JSON.stringify({ values: [row] }),
   });
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: { message: res.statusText } }));
-    throw new Error(err?.error?.message || res.statusText);
-  }
-  const result = await res.json();
-  console.log('スプシ書き込み完了:', result.updates);
 }
 
 // ---------- Google Calendar Free/Busy 取得 ----------

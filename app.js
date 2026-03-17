@@ -1103,6 +1103,8 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
     } catch(e) { console.warn('シート名変更スキップ:', e); }
   }
 
+  const HEADERS = ['企業名', '顧客名', '部署', '役職', '電話番号', 'メールアドレス', 'メール送信日', '商談日時', 'コメント', '担当者', '担当者メール', '予約ID', 'カレンダーイベントID', '開始日時', '種別', '会議URL'];
+
   if (!sheetId) {
     // 初回: スプレッドシートを自動作成
     const created = await gapi.client.request({
@@ -1116,13 +1118,18 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
     sheetId = created.result.spreadsheetId;
     localStorage.setItem('sakupita_sheet_id', sheetId);
     CONFIG.SHEET_ID = sheetId;
+  }
 
-    // ヘッダー行を追加
+  // ヘッダー行が未設定なら書き込む（既存シート含む）
+  const headerCheck = await gapi.client.request({
+    path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A1`,
+  });
+  if (!headerCheck.result.values?.[0]?.[0]) {
     await gapi.client.request({
-      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A1:append`,
-      method: 'POST',
+      path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A1`,
+      method: 'PUT',
       params: { valueInputOption: 'USER_ENTERED' },
-      body: { values: [['企業名', '顧客名', '部署', '役職', '電話番号', 'メールアドレス', 'メール送信日', '商談日', 'コメント', '担当者', '担当者メール', '予約ID', 'イベントID', '開始日時(ISO)', '種別', '会議URL']] },
+      body: { values: [HEADERS] },
     });
   }
 

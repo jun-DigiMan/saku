@@ -1091,13 +1091,25 @@ async function sendConfirmationEmails({ customerName, companyName, customerEmail
 async function appendToSheet({ companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, bookingId, eventId, memberName, memberEmail, startISO, meetUrl, isReschedule }) {
   let sheetId = CONFIG.SHEET_ID || localStorage.getItem('sakupita_sheet_id');
 
+  // 既存シートのタイトルを正しい名前に更新（初回のみ）
+  if (sheetId && !localStorage.getItem('sakupita_sheet_renamed')) {
+    try {
+      await gapi.client.request({
+        path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`,
+        method: 'POST',
+        body: { requests: [{ updateSpreadsheetProperties: { properties: { title: '【サクピタ】顧客管理表' }, fields: 'title' } }] },
+      });
+      localStorage.setItem('sakupita_sheet_renamed', '1');
+    } catch(e) { console.warn('シート名変更スキップ:', e); }
+  }
+
   if (!sheetId) {
     // 初回: スプレッドシートを自動作成
     const created = await gapi.client.request({
       path: 'https://sheets.googleapis.com/v4/spreadsheets',
       method: 'POST',
       body: {
-        properties: { title: 'サクピタ 予約記録' },
+        properties: { title: '【サクピタ】顧客管理表' },
         sheets: [{ properties: { title: 'Sheet1' } }],
       },
     });

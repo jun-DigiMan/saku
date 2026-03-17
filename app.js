@@ -815,12 +815,14 @@ async function handleBooking() {
         const meetUrl = zoomPmi
           ? (zoomPmi.startsWith('http') ? zoomPmi : `https://zoom.us/j/${zoomPmi.replace(/\D/g, '')}`)
           : (created.meetUrl || '');
+        const sheetId = CONFIG.SHEET_ID || localStorage.getItem('sakupita_sheet_id') || '';
+        const sheetUrl = sheetId ? `https://docs.google.com/spreadsheets/d/${sheetId}` : '';
         await sendConfirmationEmails({
           customerName, companyName, customerEmail,
           memberName:  state.selectedMember.name,
           memberEmail: state.selectedMember.calendarId,
           dateLabel, meetUrl, zoomPmi,
-          rescheduleLink,
+          rescheduleLink, sheetUrl,
           isReschedule: !!state.rescheduleData,
         });
         // メール送信成功 → バウンス確認（失敗しても送信失敗扱いにしない）
@@ -850,7 +852,7 @@ async function handleBooking() {
       }
       // カレンダーイベントにメール送信状況を追記（失敗時はタイトルにも反映）
       try {
-        const baseDesc = `【会社名】${companyName || ''}\n【顧客名】${customerName}様\n【部署名・役職名】${customerDept || ''}${customerTitle ? ' ' + customerTitle : ''}\n【電話番号】${customerPhone || ''}\n【メールアドレス】${customerEmail || ''}${comment ? '\n【コメント】' + comment : ''}`;
+        const baseDesc = `【会社名】${companyName || ''}\n【顧客名】${customerName}様\n【部署名・役職名】${customerDept || ''}${customerTitle ? ' ' + customerTitle : ''}\n【電話番号】${customerPhone || ''}\n【メールアドレス】${customerEmail || ''}${comment ? '\n【コメント】' + comment : ''}${sheetUrl ? '\n\n【予約記録スプレッドシート】' + sheetUrl : ''}`;
         const patchBody = {
           description: baseDesc + '\n\n' + mailStatus,
         };
@@ -881,7 +883,7 @@ async function handleBooking() {
           bookingId, eventId: created.id,
           memberName: state.selectedMember.name,
           memberEmail: state.selectedMember.calendarId,
-          startISO,
+          startISO, meetUrl,
           isReschedule: !!state.rescheduleData,
         });
         // リスケジュールモード終了
@@ -1029,7 +1031,7 @@ async function sendGmail(to, subject, htmlBody) {
   });
 }
 
-async function sendConfirmationEmails({ customerName, companyName, customerEmail, memberName, memberEmail, dateLabel, meetUrl, zoomPmi, rescheduleLink, isReschedule }) {
+async function sendConfirmationEmails({ customerName, companyName, customerEmail, memberName, memberEmail, dateLabel, meetUrl, zoomPmi, rescheduleLink, sheetUrl, isReschedule }) {
   const subject = isReschedule ? '【日程変更】お打ち合わせ日程のご連絡' : 'お打ち合わせ日程確定のご連絡';
   const logoTag = `<img src="cid:sakupita_logo" alt="サクピタ" style="height:87px;">`;
   const isZoom = !!(zoomPmi && meetUrl);
@@ -1041,6 +1043,9 @@ async function sendConfirmationEmails({ customerName, companyName, customerEmail
     : '';
   const memberRescheduleHtml = rescheduleLink
     ? `<p style="margin:16px 0;background:#f8f9fa;border-left:3px solid #f0c040;padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;">🔄 <strong>日程変更リンク（担当者用）</strong><br><a href="${rescheduleLink}" style="color:#1155cc;">${rescheduleLink}</a><br><small style="color:#888;">このリンクからログイン済みのサクピタで日程変更できます</small></p>`
+    : '';
+  const memberSheetHtml = sheetUrl
+    ? `<p style="margin:16px 0;background:#e8f0fe;border-left:3px solid #1a73e8;padding:10px 14px;border-radius:0 6px 6px 0;font-size:13px;">📊 <strong>予約記録スプレッドシート</strong><br><a href="${sheetUrl}" style="color:#1155cc;">${sheetUrl}</a></p>`
     : '';
 
   const header = `<div style="background:#1a2744;padding:16px 24px;border-radius:8px 8px 0 0;">${logoTag}</div>`;
@@ -1070,7 +1075,8 @@ async function sendConfirmationEmails({ customerName, companyName, customerEmail
     `<p>${isReschedule ? '日程変更の処理が完了しました。' : '新しいお打ち合わせの予約が入りました。'}</p>` +
     table([['顧客', `${companyName ? companyName + '　' : ''}${customerName} 様`], ['メール', customerEmail], ['日時', dateLabel]]) +
     meetHtml +
-    memberRescheduleHtml
+    memberRescheduleHtml +
+    memberSheetHtml
   );
 
   await Promise.all([
@@ -1080,7 +1086,7 @@ async function sendConfirmationEmails({ customerName, companyName, customerEmail
 }
 
 // ---------- スプレッドシート連携 ----------
-async function appendToSheet({ companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, bookingId, eventId, memberName, memberEmail, startISO, isReschedule }) {
+async function appendToSheet({ companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, bookingId, eventId, memberName, memberEmail, startISO, meetUrl, isReschedule }) {
   let sheetId = CONFIG.SHEET_ID || localStorage.getItem('sakupita_sheet_id');
 
   if (!sheetId) {
@@ -1102,7 +1108,7 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
       path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A1:append`,
       method: 'POST',
       params: { valueInputOption: 'USER_ENTERED' },
-      body: { values: [['企業名', '顧客名', '部署', '役職', '電話番号', 'メールアドレス', 'メール送信日', '商談日', 'コメント', '担当者', '担当者メール', '予約ID', 'イベントID', '開始日時(ISO)', '種別']] },
+      body: { values: [['企業名', '顧客名', '部署', '役職', '電話番号', 'メールアドレス', 'メール送信日', '商談日', 'コメント', '担当者', '担当者メール', '予約ID', 'イベントID', '開始日時(ISO)', '種別', '会議URL']] },
     });
   }
 
@@ -1110,7 +1116,7 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
     path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A1:append`,
     method: 'POST',
     params: { valueInputOption: 'USER_ENTERED' },
-    body: { values: [[companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, memberName || '', memberEmail || '', bookingId || '', eventId || '', startISO || '', isReschedule ? '日程変更' : '新規予約']] },
+    body: { values: [[companyName, customerName, customerDept, customerTitle, customerPhone, customerEmail, sentDate, meetingDate, comment, memberName || '', memberEmail || '', bookingId || '', eventId || '', startISO || '', isReschedule ? '日程変更' : '新規予約', meetUrl || '']] },
   });
 }
 

@@ -797,12 +797,12 @@ async function handleBooking() {
       });
       // 確認メール送信 → バウンス確認 → 成否をカレンダーに記録
       let mailStatus = '';
+      const bookingId = generateBookingId();
       try {
         const { date, hour, min, endH, endM } = state.selectedSlot;
         const fmt = (h, m) => `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
         const dateLabel = `${date.getFullYear()}年${date.getMonth()+1}月${date.getDate()}日（${DAY_NAMES[date.getDay()-1]}）${fmt(hour,min)} 〜 ${fmt(endH,endM)}`;
         const sendTimestamp = Math.floor(Date.now() / 1000);
-        const bookingId = generateBookingId();
         const bookingData = {
           bookingId, eventId: created.id,
           customerName, companyName, customerEmail, customerPhone,

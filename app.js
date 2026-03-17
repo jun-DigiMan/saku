@@ -854,7 +854,7 @@ async function handleBooking() {
       }
       // カレンダーイベントにメール送信状況を追記（失敗時はタイトルにも反映）
       try {
-        const baseDesc = `【会社名】${companyName || ''}\n【顧客名】${customerName}様\n【部署名・役職名】${customerDept || ''}${customerTitle ? ' ' + customerTitle : ''}\n【電話番号】${customerPhone || ''}\n【メールアドレス】${customerEmail || ''}${comment ? '\n【コメント】' + comment : ''}${sheetUrl ? '\n\n【予約記録スプレッドシート】' + sheetUrl : ''}`;
+        const baseDesc = `【会社名】${companyName || ''}\n【顧客名】${customerName}様\n【部署名・役職名】${customerDept || ''}${customerTitle ? ' ' + customerTitle : ''}\n【電話番号】${customerPhone || ''}\n【メールアドレス】${customerEmail || ''}${comment ? '\n【コメント】' + comment : ''}${rescheduleLink ? '\n\n【日程変更リンク】' + rescheduleLink : ''}${sheetUrl ? '\n【予約記録スプレッドシート】' + sheetUrl : ''}`;
         const patchBody = {
           description: baseDesc + '\n\n' + mailStatus,
         };

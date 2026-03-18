@@ -1124,17 +1124,26 @@ async function initSpreadsheet() {
     console.log('スプシヘッダー更新完了:', tabTitle);
   }
 
-  // ヘッダー行を中央揃えに
+  // ヘッダー行を中央揃え + データ行（2行目以降）を左揃え・背景色なし
   const sheetIdNum = meta.sheets?.[0]?.properties?.sheetId ?? 0;
   await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
     method: 'POST', headers: auth,
-    body: JSON.stringify({ requests: [{
-      repeatCell: {
-        range: { sheetId: sheetIdNum, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: HEADERS.length },
-        cell: { userEnteredFormat: { horizontalAlignment: 'CENTER' } },
-        fields: 'userEnteredFormat.horizontalAlignment',
+    body: JSON.stringify({ requests: [
+      {
+        repeatCell: {
+          range: { sheetId: sheetIdNum, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: HEADERS.length },
+          cell: { userEnteredFormat: { horizontalAlignment: 'CENTER' } },
+          fields: 'userEnteredFormat.horizontalAlignment',
+        },
       },
-    }] }),
+      {
+        repeatCell: {
+          range: { sheetId: sheetIdNum, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 0, endColumnIndex: HEADERS.length },
+          cell: { userEnteredFormat: { horizontalAlignment: 'LEFT', backgroundColor: { red: 1, green: 1, blue: 1 } } },
+          fields: 'userEnteredFormat.horizontalAlignment,userEnteredFormat.backgroundColor',
+        },
+      },
+    ] }),
   });
 }
 
@@ -1150,12 +1159,31 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
     eventId || '', startISO || '', isReschedule ? '日程変更' : '新規予約', meetUrl || '',
   ];
 
-  await gapi.client.request({
+  const appendRes = await gapi.client.request({
     path: `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/Sheet1%21A2:append`,
     method: 'POST',
     params: { valueInputOption: 'USER_ENTERED', insertDataOption: 'INSERT_ROWS' },
     body: JSON.stringify({ values: [row] }),
   });
+
+  // 追加行を左揃え・背景色なしに設定
+  const updatedRange = appendRes?.result?.updates?.updatedRange || '';
+  const rowMatch = updatedRange.match(/(\d+)(?::|\s*$)/);
+  const token = gapi.client.getToken();
+  if (rowMatch && token?.access_token) {
+    const rowIdx = parseInt(rowMatch[1]) - 1; // 0-indexed
+    await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token.access_token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ requests: [{
+        repeatCell: {
+          range: { sheetId: 0, startRowIndex: rowIdx, endRowIndex: rowIdx + 1, startColumnIndex: 0, endColumnIndex: row.length },
+          cell: { userEnteredFormat: { horizontalAlignment: 'LEFT', backgroundColor: { red: 1, green: 1, blue: 1 } } },
+          fields: 'userEnteredFormat.horizontalAlignment,userEnteredFormat.backgroundColor',
+        },
+      }] }),
+    });
+  }
 }
 
 // ---------- Google Calendar Free/Busy 取得 ----------

@@ -3602,6 +3602,9 @@ const ROMAJI_RANGES = { 1:[2,6], 2:[4,11], 3:[6,14], 4:[8,17] };
 function splitJapaneseName(name, email) {
   const clean = name.replace(/\s/g, '');
 
+  // 入力全体が苗字辞書に完全一致する場合はスペースなしで返す（苗字のみ入力）
+  if (JP_SURNAMES.includes(clean)) return clean;
+
   // 辞書に一致する苗字候補を全て収集
   const candidates = [];
   for (const s of JP_SURNAMES) {

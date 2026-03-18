@@ -1129,6 +1129,7 @@ async function initSpreadsheet() {
   await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${sheetId}:batchUpdate`, {
     method: 'POST', headers: auth,
     body: JSON.stringify({ requests: [
+      // ヘッダー行: 中央揃え
       {
         repeatCell: {
           range: { sheetId: sheetIdNum, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: HEADERS.length },
@@ -1136,11 +1137,20 @@ async function initSpreadsheet() {
           fields: 'userEnteredFormat.horizontalAlignment',
         },
       },
+      // データ行: 左揃え・白背景・太文字なし
       {
         repeatCell: {
           range: { sheetId: sheetIdNum, startRowIndex: 1, endRowIndex: 1000, startColumnIndex: 0, endColumnIndex: HEADERS.length },
-          cell: { userEnteredFormat: { horizontalAlignment: 'LEFT', backgroundColor: { red: 1, green: 1, blue: 1 } } },
-          fields: 'userEnteredFormat.horizontalAlignment,userEnteredFormat.backgroundColor',
+          cell: { userEnteredFormat: { horizontalAlignment: 'LEFT', backgroundColor: { red: 1, green: 1, blue: 1 }, textFormat: { bold: false } } },
+          fields: 'userEnteredFormat.horizontalAlignment,userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold',
+        },
+      },
+      // Q列(16)以降 全行: 白背景・太文字なし
+      {
+        repeatCell: {
+          range: { sheetId: sheetIdNum, startRowIndex: 0, endRowIndex: 1000, startColumnIndex: HEADERS.length, endColumnIndex: 26 },
+          cell: { userEnteredFormat: { backgroundColor: { red: 1, green: 1, blue: 1 }, textFormat: { bold: false } } },
+          fields: 'userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold',
         },
       },
     ] }),
@@ -1178,8 +1188,8 @@ async function appendToSheet({ companyName, customerName, customerDept, customer
       body: JSON.stringify({ requests: [{
         repeatCell: {
           range: { sheetId: 0, startRowIndex: rowIdx, endRowIndex: rowIdx + 1, startColumnIndex: 0, endColumnIndex: row.length },
-          cell: { userEnteredFormat: { horizontalAlignment: 'LEFT', backgroundColor: { red: 1, green: 1, blue: 1 } } },
-          fields: 'userEnteredFormat.horizontalAlignment,userEnteredFormat.backgroundColor',
+          cell: { userEnteredFormat: { horizontalAlignment: 'LEFT', backgroundColor: { red: 1, green: 1, blue: 1 }, textFormat: { bold: false } } },
+          fields: 'userEnteredFormat.horizontalAlignment,userEnteredFormat.backgroundColor,userEnteredFormat.textFormat.bold',
         },
       }] }),
     });

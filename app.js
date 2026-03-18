@@ -742,6 +742,7 @@ async function handleBooking() {
   if (!customerDept)   { highlight('customer-dept');  return; }
   if (!customerTitle)  { highlight('customer-title'); return; }
   if (!state.selectedMember) { alert('担当者を選択してください'); return; }
+  if (!state.selectedSlot)  { alert('スロット情報が取得できません。日程を選び直してください'); return; }
 
   const btn = document.getElementById('confirm-booking');
   btn.disabled = true;
@@ -4583,7 +4584,7 @@ function processUrlParams() {
   const color = MEMBER_COLORS.find(c => !usedColors.includes(c))
               || MEMBER_COLORS[state.members.length % MEMBER_COLORS.length];
 
-  state.members.push({ name, lastName, calendarId: email, color });
+  state.members.push({ name, lastName, calendarId: email, color, zoomPmi: '', meetDefault: 'meet' });
   saveMembersToStorage();
   // URLパラメータを消す（再読み込みで二重追加しない）
   history.replaceState(null, '', window.location.pathname);
@@ -4634,7 +4635,7 @@ function addMember() {
   const usedColors = state.members.map(m => m.color);
   const color = MEMBER_COLORS.find(c => !usedColors.includes(c)) || MEMBER_COLORS[state.members.length % MEMBER_COLORS.length];
 
-  state.members.push({ name, lastName, calendarId: email, color });
+  state.members.push({ name, lastName, calendarId: email, color, zoomPmi: '', meetDefault: 'meet' });
   saveMembersToStorage();
   renderMembersList();
   nameEl.value = '';
@@ -4782,7 +4783,7 @@ function addMemberFromEmail(name, email) {
   const lastName = name.replace(/[\s　]/g, '').slice(0, 2);
   const usedColors = state.members.map(m => m.color);
   const color = MEMBER_COLORS.find(c => !usedColors.includes(c)) || MEMBER_COLORS[state.members.length % MEMBER_COLORS.length];
-  state.members.push({ name, lastName, calendarId: email, color });
+  state.members.push({ name, lastName, calendarId: email, color, zoomPmi: '', meetDefault: 'meet' });
   saveMembersToStorage();
   renderMembersList();
   loadAndRender();
